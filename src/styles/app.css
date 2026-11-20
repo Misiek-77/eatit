@@ -1,0 +1,1696 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ---------- layout ---------- */
+
+.app {
+  max-width: var(--column);
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+
+.screen {
+  padding: calc(env(safe-area-inset-top) + 12px) var(--gutter)
+    calc(var(--tabbar) + env(safe-area-inset-bottom) + var(--rest-space, 0px) + 32px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: var(--tap);
+  margin: 0 -10px 4px;
+}
+
+.header .spacer {
+  flex: 1;
+}
+
+.title {
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.section {
+  margin-top: 36px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 14px;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 28px 0;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.row-actions > * {
+  flex: 1;
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  background: var(--field);
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.985);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-quiet {
+  background: none;
+  border: 1px solid var(--line);
+}
+
+.btn-danger {
+  background: none;
+  color: var(--danger);
+}
+
+.btn-small {
+  min-height: var(--tap);
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 50%;
+  color: var(--muted);
+  flex: none;
+}
+
+.icon-btn:hover {
+  color: var(--ink);
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
+}
+
+.icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- lists ---------- */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.list > li {
+  border-bottom: 1px solid var(--line);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 0;
+  text-align: left;
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+
+.item-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.item-end {
+  color: var(--muted);
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+/* ---------- form controls ---------- */
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field > span {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.input,
+.select {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.num {
+  width: 100%;
+  height: var(--tap);
+  border: 0;
+  border-radius: 10px;
+  background: var(--field);
+  text-align: center;
+  font-size: 17px;
+  font-weight: 550;
+  padding: 0 4px;
+}
+
+.num[aria-invalid='true'] {
+  outline: 2px solid var(--danger);
+}
+
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 12px calc(-1 * var(--gutter)) 4px;
+  padding: 2px var(--gutter);
+  scrollbar-width: none;
+}
+
+.chip {
+  flex: none;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.segmented button {
+  min-height: var(--tap);
+  border-radius: 10px;
+  font-size: 15px;
+  color: var(--muted);
+  padding: 4px 6px;
+  line-height: 1.2;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stepper output {
+  min-width: 44px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.stepper .icon-btn {
+  background: var(--field);
+  color: var(--ink);
+}
+
+/* ---------- tab bar ---------- */
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabbar nav {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  max-width: var(--column);
+  height: var(--tabbar);
+  margin: 0 auto;
+}
+
+.tab {
+  position: relative;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--muted);
+}
+
+.tab.active {
+  color: var(--ink);
+}
+
+.tab .dot {
+  position: absolute;
+  top: 10px;
+  left: calc(50% + 9px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+/* ---------- rest timer ---------- */
+
+.restbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tabbar) + env(safe-area-inset-bottom));
+  z-index: 9;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.restbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: var(--column);
+  margin: 0 auto;
+  padding: 8px var(--gutter);
+}
+
+.restbar-progress {
+  height: 3px;
+  background: var(--accent);
+  transition: width 0.25s linear;
+}
+
+.restbar-time {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  flex: 1;
+}
+
+.restbar-time small {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- sheets ---------- */
+
+dialog.sheet {
+  width: min(var(--column), 100%);
+  max-width: 100%;
+  max-height: 88dvh;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 22px 22px 0 0;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+dialog.sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog.sheet:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.sheet::backdrop {
+  background: var(--backdrop);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px 6px var(--gutter);
+}
+
+.sheet-head h2 {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.sheet-body {
+  overflow-y: auto;
+  padding: 6px var(--gutter) calc(env(safe-area-inset-bottom) + 24px);
+}
+
+@media (min-width: 560px) {
+  dialog.sheet {
+    margin: auto;
+    border-radius: 22px;
+  }
+}
+
+/* ---------- active workout ---------- */
+
+.workout-name {
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  border-radius: 6px;
+}
+
+.clock {
+  font-size: 15px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.entry {
+  margin-top: 32px;
+}
+
+.entry-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: -10px;
+}
+
+.entry-head h2 {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.sets {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 76px 64px var(--tap);
+  gap: 8px 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.sets-head {
+  display: contents;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sets-head > * {
+  text-align: center;
+}
+
+.sets-head > :nth-child(2) {
+  text-align: left;
+}
+
+.set-row {
+  display: contents;
+}
+
+.set-index {
+  color: var(--muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+.set-prev {
+  color: var(--muted);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.check {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 10px;
+  background: var(--field);
+  color: var(--muted);
+}
+
+.check[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.check:disabled {
+  opacity: 0.45;
+}
+
+.set-row.done .num {
+  background: none;
+}
+
+.entry-foot {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ---------- stats ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.stat-value small {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+}
+
+.chart text {
+  fill: var(--muted);
+  font-size: 11px;
+}
+
+.set-list {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 4px 8px;
+  margin: 6px 0 0;
+}
+
+.set-list dt {
+  color: var(--muted);
+}
+
+.set-list dd {
+  margin: 0;
+}
+
+/* ---------- messages ---------- */
+
+.banner {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 20;
+  width: min(calc(var(--column) - 32px), calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 14px;
+  border-radius: var(--radius);
+  background: var(--danger);
+  color: var(--bg);
+  font-size: 14px;
+}
+
+.banner .icon-btn {
+  color: inherit;
+}
+
+.note {
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--field);
+  font-size: 14px;
+}
+
+.note.error {
+  color: var(--danger);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* ---------- exercise guide ---------- */
+
+.guide {
+  margin-top: 24px;
+}
+
+.guide .label {
+  margin-top: 24px;
+}
+
+.guide-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  /* The illustrations have their own off-white paper; keep it from flashing while loading in dark mode. */
+  background: #f7f7f3;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tag {
+  padding: 5px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.tag.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.steps,
+.mistakes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.steps {
+  counter-reset: step;
+}
+
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 8px;
+}
+
+.steps li::before {
+  content: counter(step);
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.mistakes li {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.mistakes li::before {
+  content: '×';
+  font-weight: 650;
+  color: var(--danger);
+}
+
+.entry-name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  letter-spacing: inherit;
+  border-radius: 6px;
+}
+
+.entry-hint {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- muscle map ---------- */
+
+.muscle-map {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin: 4px 0 16px;
+}
+
+.muscle-map figure {
+  margin: 0;
+  width: 118px;
+  text-align: center;
+}
+
+.muscle-map svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.muscle-map figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mm-body {
+  fill: var(--field);
+  stroke: var(--field);
+  stroke-linecap: round;
+}
+
+.mm-muscle {
+  fill: color-mix(in srgb, var(--muted) 20%, var(--field));
+}
+
+.mm-muscle.secondary {
+  fill: color-mix(in srgb, var(--accent) 62%, var(--field));
+}
+
+.mm-muscle.primary {
+  fill: var(--accent);
+  stroke: color-mix(in srgb, var(--accent) 55%, var(--ink));
+  stroke-width: 0.6;
+}
+
+/* ---------- exercise thumbnails ---------- */
+
+.thumb {
+  flex: none;
+  display: block;
+  width: 76px;
+  height: auto;
+  aspect-ratio: 320 / 239;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  /* Same paper colour as the illustrations, so tiles do not flash while loading in dark mode. */
+  background: #f7f7f3;
+}
+
+.thumb-large {
+  width: 104px;
+}
+
+span.thumb {
+  background: var(--line);
+}
+
+/* ---------- set kinds, notes, record message ---------- */
+
+button.set-index {
+  min-height: var(--tap);
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+}
+
+.set-index.kind-warmup,
+.set-index.kind-failure,
+.set-index.kind-drop {
+  color: var(--ink);
+  background: var(--field);
+}
+
+.item > .set-index {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--field);
+}
+
+.kind-tag {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.note-field {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  /* 16px or more: Safari on iPhone zooms the whole page into any smaller text field it focuses. */
+  font-size: 16px;
+  resize: none;
+  /* Grows with the text where supported; otherwise stays one line and scrolls. */
+  field-sizing: content;
+}
+
+.note-field::placeholder {
+  color: var(--muted);
+}
+
+.note-field:focus {
+  outline: none;
+  border-bottom-color: var(--line);
+}
+
+.note-text {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.thumb-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast {
+  position: fixed;
+  /* Sits just above the tab bar and the rest bar, clear of the Finish button. */
+  bottom: calc(var(--tabbar) + env(safe-area-inset-bottom) + var(--rest-space, 0px) + 12px);
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin-inline: auto;
+  z-index: 30;
+  max-width: min(92vw, 440px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
+}
+
+.toast:empty {
+  display: none;
+}
+
+/* A checkbox drawn as an on/off switch, the control people expect for a setting on a phone. */
+.switch {
+  flex: none;
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--line);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  transition: transform 0.2s ease;
+}
+
+.switch:checked {
+  background: var(--accent);
+}
+
+.switch:checked::before {
+  transform: translateX(20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .switch,
+  .switch::before {
+    transition: none;
+  }
+}
+
+/* ---------- progress screen ---------- */
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.calendar-head .label {
+  flex: 1;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px 4px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.calendar-weekday {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.calendar-day {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-day.out {
+  color: var(--muted);
+  opacity: 0.45;
+}
+
+.calendar-day.today {
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.calendar-day.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 650;
+  opacity: 1;
+}
+
+.bars {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(40px, 1fr) max-content;
+  gap: 10px 12px;
+  align-items: center;
+}
+
+.bar-row {
+  display: contents;
+}
+
+.bar-name {
+  font-weight: 550;
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--field);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.bar-value {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-row .bar-name {
+  color: var(--muted);
+}
+
+.measure-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ---------- plate calculator ---------- */
+
+.plates {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.plate {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  /* Heavier plates are drawn taller, like on a bar seen from the side. */
+  height: calc(40px + var(--size) * 1.6px);
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- pose animation ---------- */
+
+.pose {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.pose .guide-image,
+.pose-stage {
+  justify-self: stretch;
+}
+
+.pose-stage {
+  position: relative;
+  height: min(340px, 78vw);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #f7f7f3;
+  overflow: hidden;
+}
+
+/* Each frame shows one half of the two-pose image, centred in the stage. */
+.pose-frame {
+  position: absolute;
+  inset: 0;
+  margin-inline: auto;
+  aspect-ratio: 480 / 717;
+  height: 100%;
+  background-image: var(--pose-image);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+}
+
+.pose-start {
+  background-position: left center;
+}
+
+.pose-end {
+  background-position: right center;
+  animation: pose-cycle 2.6s ease-in-out infinite;
+}
+
+@keyframes pose-cycle {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  50%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- supersets, targets, entry tools ---------- */
+
+.link-btn {
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-align: left;
+}
+
+.link-btn[aria-pressed='true'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.entry-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin-top: 6px;
+}
+
+.entry-target {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.superset-link {
+  margin: 14px 0 -8px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-basis: 100%;
+}
+
+.range .num {
+  width: 64px;
+}
+
+/* ---------- records, comparison, goals, photos ---------- */
+
+.delta {
+  flex: none;
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.delta.up {
+  color: light-dark(#3f6b00, var(--accent));
+}
+
+.delta.down {
+  color: var(--danger);
+}
+
+.compare {
+  width: 100%;
+  margin-top: 8px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.compare th,
+.compare td {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.compare th[scope='row'],
+.compare th:first-child {
+  text-align: left;
+  font-weight: 550;
+}
+
+.compare thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.goals {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.goal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-head .item-title {
+  flex: 1;
+}
+
+.goal .item-sub {
+  margin-top: 6px;
+}
+
+.goal.reached .item-sub {
+  color: var(--ink);
+}
+
+.photo-grid {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.photo {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--field);
+  aspect-ratio: 3 / 4;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo[aria-pressed='true'] {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.photo-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.photo-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.photo-compare figure {
+  margin: 0;
+}
+
+.photo-compare img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--field);
+}
+
+.photo-compare figcaption {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- week schedule, today's plan ---------- */
+
+.schedule {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+
+.schedule label {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.schedule-day.today {
+  font-weight: 650;
+}
+
+.today-plan {
+  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- backup reminder ---------- */
+
+.reminder {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 15px;
+}
+
+.reminder-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ---------- frame-by-frame pose animation ---------- */
+
+/* Four square frames in one row; the strip is shown one frame at a time and stepped there and back. */
+.pose-strip {
+  position: absolute;
+  inset: 0;
+  margin-inline: auto;
+  aspect-ratio: 1;
+  height: 100%;
+  background-image: var(--pose-image);
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+  animation: pose-steps 2.4s steps(1) infinite;
+}
+
+@keyframes pose-steps {
+  0% {
+    background-position: 0 0;
+  }
+  22% {
+    background-position: 33.333% 0;
+  }
+  36% {
+    background-position: 66.667% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+  72% {
+    background-position: 66.667% 0;
+  }
+  86% {
+    background-position: 33.333% 0;
+  }
+}
+
+/* ---------- history grouped by month ---------- */
+
+.history-month + .history-month {
+  margin-top: 24px;
+}
+
+.history-month .label::first-letter {
+  text-transform: uppercase;
+}
+
+/* ---------- period summary ---------- */
+
+.period-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.period-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.period-title strong {
+  font-size: 18px;
+}
+
+.summary-hero {
+  position: relative;
+  margin-top: 16px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #f7f7f3;
+  color: #121211;
+  min-height: 132px;
+}
+
+.summary-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* The numbers sit on a soft band over the bottom of the illustration, readable in both themes. */
+.summary-hero-text {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 28px 16px 14px;
+  background: linear-gradient(to top, rgb(247 247 243 / 0.97) 55%, rgb(247 247 243 / 0));
+}
+
+/* Without an illustration the band is the whole card. */
+.summary-art[style*='none'] + .summary-hero-text {
+  position: static;
+  background: none;
+}
+
+.summary-big {
+  font-size: 48px;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.summary-big-label {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.summary-hero .delta {
+  flex-basis: 100%;
+  font-size: 14px;
+}
+
+.summary-hero .delta.up {
+  color: #3f6b00;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summary-tile {
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.summary-tile .delta {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.rank {
+  flex: none;
+  width: 22px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+
+.badge {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+/* ---------- new version available ---------- */
+
+.banner-update {
+  top: auto;
+  bottom: calc(var(--tabbar) + env(safe-area-inset-bottom) + var(--rest-space, 0px) + 12px);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+}
+
+/* ---------- stalled progress hint ---------- */
+
+.stall-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--field);
+  font-size: 14px;
+}
+
+.stall-hint p {
+  flex: 1;
+}
+
+/* Reps in reserve noted on a set, under its number. */
+.set-index .rir {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--muted);
+}
+
+/* ---------- fold-out section (1RM calculator) ---------- */
+
+.disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure > summary::after {
+  content: '+';
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.disclosure[open] > summary::after {
+  content: '−';
+}
+
+.disclosure[open] > summary {
+  margin-bottom: 10px;
+}
+
+.percent-table td,
+.percent-table th {
+  padding: 8px 0;
+}

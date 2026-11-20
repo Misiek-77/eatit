@@ -1,0 +1,171 @@
+/* Styles of the nutrition diary only. app.css and tokens.css are shared with the training app unchanged. */
+
+.day-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.day-title {
+  flex: 1;
+  text-align: center;
+}
+
+.day-title .title {
+  margin: 0;
+}
+
+.day-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.day-summary-side {
+  flex: 1;
+  min-width: 0;
+}
+
+.day-summary-side p {
+  font-size: 18px;
+}
+
+.kcal-ring {
+  position: relative;
+  flex: none;
+  width: 132px;
+  height: 132px;
+}
+
+.kcal-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.kcal-ring-track {
+  fill: none;
+  stroke: var(--field);
+  stroke-width: 12;
+}
+
+.kcal-ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+
+.kcal-ring-fill.over {
+  stroke: var(--danger);
+}
+
+.kcal-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.kcal-ring-text strong {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.kcal-ring-text span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* The three macro rows are narrower than the training app's muscle bars. */
+.macro-bars {
+  grid-template-columns: max-content minmax(30px, 1fr);
+  gap: 4px 10px;
+}
+
+.macro-bars .bar-value {
+  grid-column: 1 / -1;
+  text-align: left;
+  font-size: 13px;
+  margin-top: -2px;
+  margin-bottom: 4px;
+}
+
+.bar-fill.over {
+  background: var(--danger);
+}
+
+.meal-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.add-food {
+  margin-top: 6px;
+}
+
+.add-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.amount-preview {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--field);
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-preview strong {
+  font-size: 20px;
+}
+
+.portion-row {
+  display: grid;
+  grid-template-columns: 1fr 80px auto auto;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Barcode scanner */
+.scanner {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+}
+
+.scanner video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-frame {
+  position: absolute;
+  inset: 30% 12%;
+  border: 3px solid var(--accent);
+  border-radius: 12px;
+  box-shadow: 0 0 0 999px rgb(0 0 0 / 0.35);
+}
+
+.scanner-note {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  color: #fff;
+}

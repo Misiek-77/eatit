@@ -144,3 +144,26 @@ SóV/Salt 0,08 g
     expect(readLabel(text).values).toMatchObject(expected);
   });
 });
+
+describe('the same skyr label photographed on an iPhone (full resolution)', () => {
+  it('reads it despite a g read as 7, a stray digit in a garbled name and a cut-off row name', () => {
+    const text = `PP Sapo A/S, LECWOLACHUS DUigarię, "%
+rinkable Icelandic
+gy szyć STRAWSERRY KAP Y9hu,
+„sredients: pasteurized milk, fruits 8 % (kiwi a »
+srawbery 3 %, strawberry puree 1,8 %), Sugar, no: *
+sgvouring, carrot concentrate, live yoghurt bacteria c,
+sireptococcus thermophilus, Lactobacillus bulgari, *
+Wartość odżywcza w 100 g/Nutrition facts per 101,
+Wartość energetyczna/Energy 336 kJ/80 kc,,
+sTłuszcz/Fat 157
+w tym kwasy tłuszczowe nasycone/ :
+of which saturates 110
+| 2 mł io oekinko 109
+sm Ka of which sugar 100.
+otein 651,
+*SólSal 0,08 g
+; | Masa netto / Net weight:`;
+    expect(readLabel(text).values).toEqual({ kcal: 80, fat: 1.5, carbs: 10, sugar: 10, protein: 6.5, salt: 0.08 });
+  });
+});

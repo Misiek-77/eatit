@@ -98,32 +98,42 @@ function numbersIn(line: string): Token[] {
 
 /**
  * What a misread amount may really have been, each with the number of repairs it took: as read; with its last
- * digit dropped when no unit follows (a "g" read as 9, 0, 1, 4 or 8); with a lost decimal comma put back after the
- * first or second digit; or with a middle 8 read as the comma.
+ * digit dropped when no unit follows (a "g" read as 9, 0, 1, 4, 7 or 8); with a lost decimal comma put back after
+ * the first or second digit; or with a middle 8 read as the comma.
  */
 function readings(t: Token, oneDecimal = true): { value: number; edits: number }[] {
   const out = new Map<number, number>();
-  const add = (v: number, edits: number) => {
-    const value = Math.round(v * 1000) / 1000;
-    // Two decimals are unusual for grams, so such a reading counts as less likely.
-    const cost = edits + (oneDecimal && Math.round(value * 10) !== value * 10 ? 2 : 0);
+  const add = (written: string, edits: number) => {
+    const value = Math.round(parseFloat(written) * 1000) / 1000;
+    // Grams are printed with at most one decimal, so a reading written with two ("1.59", "1.00") is less likely.
+    const cost = edits + (oneDecimal && (written.split('.')[1] ?? '').length > 1 ? 2 : 0);
     if (Number.isFinite(value) && value >= 0 && (out.get(value) ?? Infinity) > cost) out.set(value, cost);
   };
   // Grams are printed with one decimal, so "1,19" with no unit after it is most likely "1,1g" with the g read as 9:
   // that reading comes first. Salt is the exception (it has two decimals) and is read as written.
   const gAsNine = oneDecimal && !t.unit && /^\d+\.\d9$/.test(t.text);
   const variants: [string, number][] = [[t.text, gAsNine ? 1 : 0]];
-  if (!t.unit && /[90148]$/.test(t.text) && t.text.replace('.', '').length >= 2)
+  if (!t.unit && /[901478]$/.test(t.text) && t.text.replace('.', '').length >= 2)
     variants.push([t.text.slice(0, -1).replace(/\.$/, ''), gAsNine ? 0 : 1]);
   for (const [s, e] of variants) {
-    add(parseFloat(s), e);
+    add(s, e);
     if (!s.includes('.') && s.length >= 2) {
-      add(parseFloat(`${s[0]}.${s.slice(1)}`), e + 1);
-      if (s.length >= 3) add(parseFloat(`${s.slice(0, 2)}.${s.slice(2)}`), e + 1);
-      if (s.length === 3 && s[1] === '8') add(parseFloat(`${s[0]}.${s[2]}`), e + 2);
+      add(`${s[0]}.${s.slice(1)}`, e + 1);
+      if (s.length >= 3) add(`${s.slice(0, 2)}.${s.slice(2)}`, e + 1);
+      if (s.length === 3 && s[1] === '8') add(`${s[0]}.${s[2]}`, e + 2);
     }
   }
   return [...out].map(([value, edits]) => ({ value, edits }));
+}
+
+/**
+ * The amounts of a table row: the numbers after its last word. A table prints the values to the right of the
+ * name, so a digit OCR left inside a garbled name ("| 2 mł io oekinko 109") is not taken for one.
+ */
+function rowNumbers(line: string): Token[] {
+  let end = 0;
+  for (const m of line.matchAll(/[a-z]{2,}/g)) if (!/^(kcal|kj|mg)$/.test(m[0])) end = m.index + m[0].length;
+  return numbersIn(line.slice(end));
 }
 
 /** Portion size from a header like "w porcji (30 g)" or "per portion 30 g". */
@@ -171,7 +181,7 @@ export function readLabel(ocrText: string): LabelReading {
     if (/masa netto|net weight|netto|przechowywac|najlepiej spozyc/.test(line) && table.length > 0) break;
     const key = lineKey(line);
     if (key === 'energy' || /%/.test(line)) continue;
-    const nums = numbersIn(line).filter((n) => n.unit !== 'kcal' && n.unit !== 'kj');
+    const nums = rowNumbers(line).filter((n) => n.unit !== 'kcal' && n.unit !== 'kj');
     if (nums.length === 0) continue;
     table.push({ key, first: nums[0], second: nums[1] });
   }

@@ -1,3 +1,4 @@
+import type React from 'react';
 import { useState } from 'react';
 import { formatGrams, formatWhole } from '../../shared/format';
 import { NumberField } from '../../shared/NumberField';
@@ -120,5 +121,18 @@ export function AmountForm({
         </button>
       )}
     </form>
+  );
+}
+
+/** An illustration with a short message, for screens with nothing on them yet. */
+export function EmptyArt({ image, title, children }: { image: 'meal' | 'products' | 'progress'; title: string; children?: React.ReactNode }) {
+  return (
+    <figure className="empty-art">
+      <img src={`illustrations/${image}.jpg`} alt="" width={480} height={511} loading="lazy" />
+      <figcaption>
+        <strong>{title}</strong>
+        {children && <span>{children}</span>}
+      </figcaption>
+    </figure>
   );
 }

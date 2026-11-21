@@ -12,7 +12,7 @@ import { dayTotals, entryNutrients, goalsForDay } from '../domain/nutrients';
 import { MEALS, type DiaryEntry, type Meal } from '../domain/types';
 import { useNutrition } from '../state/nutritionContext';
 import { useTrainingLink } from '../state/training';
-import { AmountForm, KcalRing, MacroBars, MEAL_LABEL } from './parts';
+import { AmountForm, EmptyArt, KcalRing, MacroBars, MEAL_LABEL } from './parts';
 
 /** The diary of one day: energy and macros against the goals, and what was eaten at each meal. */
 export function TodayScreen() {
@@ -87,6 +87,12 @@ export function TodayScreen() {
           250 ml
         </button>
       </section>
+
+      {!store.entries.some((e) => e.date === date) && (
+        <EmptyArt image="meal" title={date === today ? 'Nic jeszcze nie zapisano' : 'Pusty dzień'}>
+          Dodaj produkt do posiłku albo skopiuj posiłek z innego dnia przyciskiem „Kopiuj”.
+        </EmptyArt>
+      )}
 
       {MEALS.map((meal) => {
         const entries = store.entries.filter((e) => e.date === date && e.meal === meal).sort((a, b) => a.createdAt.localeCompare(b.createdAt));

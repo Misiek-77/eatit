@@ -13,7 +13,7 @@ import { weekStart, weekSummary, type WeekDay } from '../domain/week';
 import { mergeWeights, trendLine, verdict, weeklyChange, type WeightPoint } from '../domain/weight';
 import { useNutrition } from '../state/nutritionContext';
 import { useTrainingLink } from '../state/training';
-import { MacroBars } from './parts';
+import { EmptyArt, MacroBars } from './parts';
 
 const PLAN_LABEL: Record<WeightPlan, string> = { lose: 'Chudnę', keep: 'Utrzymuję', gain: 'Buduję masę' };
 const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${formatGrams(Math.abs(n))}`;
@@ -210,7 +210,9 @@ function WeightSection({ today, fromTraining }: { today: string; fromTraining: W
           </ul>
         </>
       ) : (
-        <p className="empty">Brak pomiarów wagi.</p>
+        <EmptyArt image="progress" title="Brak pomiarów wagi">
+          Waż się kilka razy w tygodniu, a pokaże się trend i podpowiedź, czy kalorie pasują do celu.
+        </EmptyArt>
       )}
 
       <Confirm

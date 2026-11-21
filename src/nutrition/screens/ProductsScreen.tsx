@@ -4,7 +4,7 @@ import { plural, searchKey } from '../../shared/format';
 import { Header } from '../../shared/Header';
 import { Icon } from '../../shared/Icon';
 import { useNutrition } from '../state/nutritionContext';
-import { nutrientLine } from './parts';
+import { EmptyArt, nutrientLine } from './parts';
 
 /** The person's own product list: everything scanned or typed in, to edit or remove. */
 export function ProductsScreen() {
@@ -38,6 +38,11 @@ export function ProductsScreen() {
           Nowe danie
         </Link>
       </div>
+      {products.length === 0 && (
+        <EmptyArt image="products" title="Lista jest pusta">
+          Zeskanuj kod kreskowy przy dodawaniu posiłku, zrób zdjęcie etykiety albo wpisz produkt ręcznie.
+        </EmptyArt>
+      )}
       <section className="section">
         <input className="input" type="search" placeholder="Szukaj" aria-label="Szukaj produktu" value={query} onChange={(e) => setQuery(e.target.value)} />
         <ul className="list">

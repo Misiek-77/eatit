@@ -169,3 +169,15 @@
   text-align: center;
   color: #fff;
 }
+
+/* Raw text from the label reader, to compare with the label. */
+.ocr-text {
+  max-height: 240px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--field);
+  font-size: 13px;
+  white-space: pre-wrap;
+}

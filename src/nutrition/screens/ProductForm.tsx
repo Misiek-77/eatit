@@ -9,6 +9,7 @@ import { Confirm } from '../../shared/Sheet';
 import { kcalFromMacros, looksWrong } from '../domain/nutrients';
 import type { Meal, Nutrients, Portion, Product } from '../domain/types';
 import { useNutrition } from '../state/nutritionContext';
+import { foundList, LabelPhoto } from './LabelPhoto';
 
 /** What the add screen hands over when it opens this form. */
 export interface ProductDraftState {
@@ -18,6 +19,10 @@ export interface ProductDraftState {
   barcode?: string;
   /** A line about where the values came from. */
   notice?: string;
+  /** Values read from a photographed label, per 100 g. */
+  label?: Partial<Nutrients>;
+  /** The text the label reader saw, shown on request to check odd values. */
+  ocrText?: string;
   /** When set, saving goes on to ask how much of it was eaten at this meal. */
   meal?: Meal;
   date?: string;
@@ -49,7 +54,9 @@ function Form({ existing, state }: { existing?: Product; state: ProductDraftStat
   const start = existing ?? state.draft;
   const [name, setName] = useState(start?.name ?? '');
   const [brand, setBrand] = useState(start?.brand ?? '');
-  const [per100, setPer100] = useState<Nutrients>(start?.per100 ?? { kcal: 0, protein: 0, fat: 0, carbs: 0 });
+  const [per100, setPer100] = useState<Nutrients>(start?.per100 ?? { kcal: 0, protein: 0, fat: 0, carbs: 0, ...state.label });
+  const [ocrText, setOcrText] = useState(state.ocrText);
+  const [labelNotice, setLabelNotice] = useState<string | null>(null);
   const [portions, setPortions] = useState<Portion[]>(start?.portions ?? []);
   const [favorite, setFavorite] = useState(start?.favorite ?? false);
   const [removing, setRemoving] = useState(false);
@@ -65,7 +72,7 @@ function Form({ existing, state }: { existing?: Product; state: ProductDraftStat
       ...(barcode ? { barcode } : {}),
       per100,
       portions: portions.map((p) => ({ name: p.name.trim(), grams: p.grams })),
-      source: existing?.source ?? state.draft?.source ?? 'manual',
+      source: existing?.source ?? state.draft?.source ?? (ocrText ? 'label' : 'manual'),
       ...(favorite ? { favorite: true } : {}),
       updatedAt: new Date().toISOString(),
     };
@@ -104,6 +111,18 @@ function Form({ existing, state }: { existing?: Product; state: ProductDraftStat
         {barcode && <p className="muted small">Kod kreskowy: {barcode}</p>}
 
         <h2 className="label">Wartość odżywcza w 100 g</h2>
+        <LabelPhoto
+          label="Wypełnij ze zdjęcia etykiety"
+          className="btn btn-small"
+          onRead={(reading, text) => {
+            // Values found replace what is in the fields; anything not found stays as it was.
+            setPer100((n) => ({ ...n, ...reading.values }));
+            setOcrText(text);
+            const { found, missing } = foundList(reading);
+            setLabelNotice(found ? `Odczytano: ${found}.${missing ? ` Nie znaleziono: ${missing}.` : ''} Sprawdź z etykietą.` : 'Nie znaleziono wartości na zdjęciu.');
+          }}
+        />
+        {labelNotice && <p className="note" role="status">{labelNotice}</p>}
         <div className="measure-grid">
           {FIELDS.map(([key, label, required]) => (
             <label className="field" key={key}>
@@ -128,6 +147,13 @@ function Form({ existing, state }: { existing?: Product; state: ProductDraftStat
             Kalorie nie zgadzają się z makro: z białka, tłuszczu i węglowodanów wychodzi około {formatWhole(kcalFromMacros(per100))} kcal. Sprawdź, czy
             wszystko przepisane jest dobrze.
           </p>
+        )}
+
+        {ocrText && (
+          <details className="disclosure">
+            <summary>Tekst odczytany ze zdjęcia</summary>
+            <pre className="ocr-text">{ocrText.trim() || '(pusty)'}</pre>
+          </details>
         )}
 
         <h2 className="label">Porcje</h2>

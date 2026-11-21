@@ -10,6 +10,7 @@ import { lookupBarcode } from '../data/openFoodFacts';
 import { MEALS, type Meal, type Product } from '../domain/types';
 import { useNutrition } from '../state/nutritionContext';
 import { BarcodeScanner } from './BarcodeScanner';
+import { foundList, LabelPhoto } from './LabelPhoto';
 import { AmountForm, MEAL_LABEL } from './parts';
 import type { ProductDraftState } from './ProductForm';
 
@@ -83,6 +84,20 @@ export function AddScreen() {
           Nowy produkt
         </button>
       </div>
+      <LabelPhoto
+        label="Zdjęcie etykiety"
+        className="btn btn-block"
+        onRead={(reading, text) => {
+          const { found, missing } = foundList(reading);
+          toForm({
+            label: reading.values,
+            ocrText: text,
+            notice: found
+              ? `Odczytano z etykiety: ${found}${reading.portionGrams ? ` (przeliczone z porcji ${reading.portionGrams} g na 100 g)` : ''}.${missing ? ` Nie znaleziono: ${missing} — wpisz ręcznie.` : ''} Sprawdź wszystko z etykietą i wpisz nazwę.`
+              : 'Nie udało się znaleźć wartości na zdjęciu. Spróbuj zdjęcia samej tabeli z bliska albo wpisz wartości ręcznie.',
+          });
+        }}
+      />
       {looking && (
         <p className="note" role="status" style={{ marginTop: 12 }}>
           Szukam produktu {looking} w bazie…

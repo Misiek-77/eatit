@@ -17,6 +17,16 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         // Product data comes from Open Food Facts; it is never cached by the worker, only saved as "my products".
         navigateFallbackDenylist: [/^\/api\//],
+        // The label reader's engine (worker script and WebAssembly core) comes from jsDelivr the first time a label is
+        // read, at fixed versions; kept here so reading works offline afterwards. The Polish model itself is
+        // cached by Tesseract in IndexedDB.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/tesseract\.js(-core)?@/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'tesseract-engine', expiration: { maxEntries: 10 }, cacheableResponse: { statuses: [0, 200] } },
+          },
+        ],
       },
       manifest: {
         name: 'Jadłospis',

@@ -45,7 +45,7 @@ export function SettingsScreen() {
     const done = result === 'shared' ? 'Kopia zapasowa została zapisana.' : 'Kopia zapasowa została pobrana.';
     setMessage({
       kind: 'ok',
-      text: combined && !combined.withTraining ? `${done} Aplikacja Trening nie była otwierana na tym urządzeniu, więc w pliku jest tylko jadłospis.` : done,
+      text: combined && !combined.withTraining ? `${done} Danych Treningu nie widać z tej aplikacji (nie był otwierany na tym urządzeniu albo iPhone trzyma dane obu aplikacji z ekranu początkowego osobno), więc w pliku jest tylko jadłospis.` : done,
     });
   }
 

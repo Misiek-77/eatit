@@ -7,8 +7,11 @@
 
 export type DatabaseDump = Record<string, unknown[]>;
 
-/** Every store of database `name` with all its records, or null when there is no such database here. */
-export function readDatabase(name: string): Promise<DatabaseDump | null> {
+/**
+ * All records of the stores `stores` (those that exist) of database `name`, or null when there is no such
+ * database here. Only the stores asked for are read: the training app keeps physique photos, which are large.
+ */
+export function readDatabase(name: string, stores: string[]): Promise<DatabaseDump | null> {
   return new Promise((resolve) => {
     let request: IDBOpenDBRequest;
     try {
@@ -30,7 +33,7 @@ export function readDatabase(name: string): Promise<DatabaseDump | null> {
     request.onsuccess = () => {
       const db = request.result;
       db.onversionchange = () => db.close();
-      const names = [...db.objectStoreNames];
+      const names = Array.from(db.objectStoreNames).filter((n) => stores.includes(n));
       if (missing || names.length === 0) {
         db.close();
         return resolve(null);

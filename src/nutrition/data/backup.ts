@@ -31,7 +31,7 @@ const TRAINING_DEFAULTS = { restSeconds: 90, restSound: true, schedule: [null, n
  * (left out when the training app was never opened here). Each app restores its own part of the file.
  */
 export async function serializeCombined(data: NutritionData, now: string): Promise<{ text: string; withTraining: boolean }> {
-  const t = await readDatabase('trening');
+  const t = await readDatabase('trening', ['exercises', 'plans', 'workouts', 'measurements', 'goals', 'settings']);
   const training = t && {
     app: 'trening',
     version: 1,

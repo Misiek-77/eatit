@@ -13,7 +13,7 @@ export interface TrainingLink {
 const EMPTY: TrainingLink = { workoutDays: new Set(), weights: [] };
 
 export async function readTrainingLink(): Promise<TrainingLink> {
-  const db = await readDatabase('trening');
+  const db = await readDatabase('trening', ['workouts', 'measurements']);
   if (!db) return EMPTY;
   const workoutDays = new Set<string>();
   for (const w of (db.workouts ?? []) as { startedAt?: unknown }[]) {

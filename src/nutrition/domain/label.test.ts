@@ -95,3 +95,52 @@ Sól 0,08 g 0,03 g`;
     expect(readLabel(text).values).toEqual({ sugar: 1.1, protein: 13.5, salt: 0.08 });
   });
 });
+
+describe('a real photo of a curved bilingual label (drinkable skyr: 80 kcal, F 1,5, sat 1,1, C 10, S 10, P 6,5, salt 0,08)', () => {
+  const expected = { kcal: 80, fat: 1.5, carbs: 10, sugar: 10, protein: 6.5, salt: 0.08 };
+
+  it('reads it at the original size, where row names are garbled and every "g" became a digit', () => {
+    const text = `Wartość odżywcza w 100 g/Nutrition facts per 10 4
+Wartość energetyczna/Energy _ 336 kJ/80 kcal,
+Tłuszcz/Fat 159
+| w tym kwasy tłuszczowe nasycone/
+of which saturates 119»
+W prpać > yias 109
+W m cukry/of which sugar 109,
+| -5akoproe 651.
+Sól/Salt 0,08 9
+X Masa netto / Net weight:`;
+    expect(readLabel(text).values).toMatchObject(expected);
+  });
+
+  it('reads it enlarged twice, where other rows went wrong', () => {
+    const text = `Wartość odżywcza w 100 g/Nutrition facts per 100 Y
+Wartość energetyczna/Energy _ 336 KJ/80 kcal,
+Tłuszcz/Fat 1,5g
+| w tym kwasy tłuszczowe nasycone/
+of which saturates 110»
+W „ste z ori kkm 109
+w tym cukry/of which sugar 10
+| Bako 685g.
+SóV/Salt 0,08 g
+[X Masa netto / Net weight:`;
+    const { protein, ...rest } = readLabel(text).values;
+    expect(rest).toMatchObject({ kcal: 80, fat: 1.5, carbs: 10, sugar: 10, salt: 0.08 });
+    // "6,5g" came back as "685g": the comma read as an 8. Only something close can be recovered.
+    expect(Math.abs((protein ?? 0) - 6.5)).toBeLessThanOrEqual(0.5);
+  });
+
+  it('reads it enlarged three times', () => {
+    const text = `Wartość odżywcza w 100 g/Nutrition facts per 100 ;
+Wartość energetyczna/Energy__ 336 KJ/80 kcal,
+Tłuszcz/Fat 1,59
+| w tym kwasy tłuszczowe nasycone/
+of which saturates 111g.
+W po yo 109
+W m cukry/of which sugar 109.
+| Białko/Protein 6,5,
+SóV/Salt 0,08 g
+[M Masa netto / Net weight: |`;
+    expect(readLabel(text).values).toMatchObject(expected);
+  });
+});

@@ -1,9 +1,16 @@
 import type { Nutrients } from './types';
 
 /**
- * Reads the nutrition table of a food label from OCR text. Built for Polish labels (and the English one often
- * printed next to it), and forgiving about OCR mistakes: letters misread inside words ("Biatko", "Tłuszez"),
- * O for 0 inside numbers, decimal commas, values split over two lines.
+ * Reads the nutrition table of a food label from OCR text. Built for Polish labels, including the common
+ * bilingual ones ("Tłuszcz/Fat"), and for what OCR really does to a photo of a curved package:
+ *
+ * - row names come back garbled ("W prpać > yias" for "Węglowodany/Carbohydrate"). EU labels list the rows in a
+ *   fixed order, so a row that cannot be named takes the place left for it between the rows that can;
+ * - the "g" after a number turns into a digit and decimal commas vanish ("1,5 g" → "159", "6,5 g" → "651").
+ *   The energy row survives best (the kJ figure pins the kcal one), so the readings of fat, carbohydrates and
+ *   protein are chosen together to fit it: 4 kcal per gram of protein and carbohydrate, 9 per gram of fat.
+ *   Sugars may not exceed carbohydrates nor saturates fat;
+ * - O instead of 0, letters misread inside words, a value pushed onto the next line.
  */
 
 export interface LabelReading {
@@ -14,13 +21,17 @@ export interface LabelReading {
 }
 
 type Key = keyof Nutrients;
+/** Table rows in the order EU rules print them; saturates is a row of its own, only used to place the others. */
+type Row = Key | 'saturates';
+const ORDER: Row[] = ['fat', 'saturates', 'carbs', 'sugar', 'fiber', 'protein', 'salt'];
 
-/** Words that start a row, without diacritics. The first match on a line decides what the line is. */
-const KEYWORDS: [Key, string[]][] = [
-  ['kcal', ['wartosc energetyczna', 'energia', 'energy']],
+/** Words that name a row, without diacritics, Polish and English. */
+const KEYWORDS: [Row | 'energy', string[]][] = [
+  ['energy', ['wartosc energetyczna', 'energia', 'energy']],
+  ['saturates', ['kwasy tluszczowe nasycone', 'nasycone', 'of which saturates', 'saturates']],
   ['fat', ['tluszcz', 'fat']],
   ['carbs', ['weglowodany', 'carbohydrate', 'carbohydrates']],
-  ['sugar', ['cukry', 'sugars']],
+  ['sugar', ['cukry', 'sugars', 'sugar']],
   ['fiber', ['blonnik', 'fibre', 'fiber']],
   ['protein', ['bialko', 'protein']],
   ['salt', ['sol', 'salt']],
@@ -44,41 +55,75 @@ function distance(a: string, b: string): number {
   return row[b.length];
 }
 
-/** Whether the line starts (after any "w tym") with the keyword, allowing about one OCR slip per four letters. */
-function startsWith(line: string, keyword: string): boolean {
-  const text = line.replace(/^[^a-z]*(w tym|of which|in tym)\s*/, '').replace(/^[^a-z]+/, '');
+/** Whether a piece of a row name starts with the keyword, allowing about one OCR slip per four letters. */
+function startsWith(piece: string, keyword: string): boolean {
+  const text = piece.replace(/^[^a-z]*(w tym|of which|in tym)\s*/, '').replace(/^[^a-z]+/, '');
   const head = text.slice(0, keyword.length);
   if (head.length < keyword.length - 1) return false;
   const allowed = keyword.length <= 3 ? 0 : Math.floor(keyword.length / 4);
   return distance(head, keyword) <= allowed;
 }
 
-/** What a line of the table is about, or null. Saturated fats and other sub-rows of fat are not fat. */
-function lineKey(line: string): Key | null {
-  if (/nasyc|kwasy|saturat|polyol|skrobia|starch|alkohole/.test(line)) return null;
-  for (const [key, words] of KEYWORDS) if (words.some((w) => startsWith(line, w))) return key;
+/** What a line is about: its name before the numbers, in either language ("tluszcz/fat"). */
+function lineKey(line: string): Row | 'energy' | null {
+  const name = line.split(/\d/)[0];
+  if (/nasyc|saturat/.test(name)) return 'saturates';
+  if (/polyol|skrobia|starch|alkohol|jednonienas|wielonienas|mono|poly/.test(name)) return null;
+  const pieces = name.split('/').map((p) => p.trim());
+  for (const [key, words] of KEYWORDS) if (pieces.some((p) => words.some((w) => startsWith(p, w)))) return key;
   return null;
 }
 
-/** Numbers in a line, with OCR's O/o read as 0 when they sit next to digits, and decimal commas. */
-function numbersIn(line: string): { value: number; unit: string }[] {
-  const fixed = line
-    .replace(/(?<=\d)[oO](?=[\d.,\s]|$)/g, '0')
-    .replace(/(?<=[\s<~(]|^)[oO](?=[.,]\d)/g, '0');
-  const out: { value: number; unit: string }[] = [];
-  for (const m of fixed.matchAll(/(\d+(?:[.,]\d+)?)\s*(kcal|kj|mg|g)?/gi)) {
-    let digits = m[1].replace(',', '.');
-    let unit = (m[2] ?? '').toLowerCase();
-    // OCR often reads the "g" right after a number as a 9: "1,1g" comes back as "1,19". Labels give one
-    // decimal, so two decimals ending in 9 with no unit after them are read as one decimal and grams.
-    if (!unit && /^\d+\.\d9$/.test(digits)) {
-      digits = digits.slice(0, -1);
-      unit = 'g';
-    }
-    const value = parseFloat(digits);
-    if (Number.isFinite(value)) out.push({ value, unit });
+interface Token {
+  /** The number as written, with a decimal point. */
+  text: string;
+  value: number;
+  unit: string;
+}
+
+/**
+ * Numbers in a line, with O read as 0 next to digits and decimal commas as points. A digit stuck to letters
+ * ("-5akoproe", a garbled word) is part of the word, not an amount.
+ */
+function numbersIn(line: string): Token[] {
+  const fixed = line.replace(/(?<=\d)[oO](?=[\d.,\s]|$)/g, '0').replace(/(?<=[\s<~(]|^)[oO](?=[.,]\d)/g, '0');
+  const out: Token[] = [];
+  for (const m of fixed.matchAll(/(?<![a-z\d.,])(\d+(?:[.,]\d+)?)\s*(kcal|kj|mg|g)?(?![a-z])/gi)) {
+    const text = m[1].replace(',', '.');
+    const value = parseFloat(text);
+    if (Number.isFinite(value)) out.push({ text, value, unit: (m[2] ?? '').toLowerCase() });
   }
   return out;
+}
+
+/**
+ * What a misread amount may really have been, each with the number of repairs it took: as read; with its last
+ * digit dropped when no unit follows (a "g" read as 9, 0, 1, 4 or 8); with a lost decimal comma put back after the
+ * first or second digit; or with a middle 8 read as the comma.
+ */
+function readings(t: Token, oneDecimal = true): { value: number; edits: number }[] {
+  const out = new Map<number, number>();
+  const add = (v: number, edits: number) => {
+    const value = Math.round(v * 1000) / 1000;
+    // Two decimals are unusual for grams, so such a reading counts as less likely.
+    const cost = edits + (oneDecimal && Math.round(value * 10) !== value * 10 ? 2 : 0);
+    if (Number.isFinite(value) && value >= 0 && (out.get(value) ?? Infinity) > cost) out.set(value, cost);
+  };
+  // Grams are printed with one decimal, so "1,19" with no unit after it is most likely "1,1g" with the g read as 9:
+  // that reading comes first. Salt is the exception (it has two decimals) and is read as written.
+  const gAsNine = oneDecimal && !t.unit && /^\d+\.\d9$/.test(t.text);
+  const variants: [string, number][] = [[t.text, gAsNine ? 1 : 0]];
+  if (!t.unit && /[90148]$/.test(t.text) && t.text.replace('.', '').length >= 2)
+    variants.push([t.text.slice(0, -1).replace(/\.$/, ''), gAsNine ? 0 : 1]);
+  for (const [s, e] of variants) {
+    add(parseFloat(s), e);
+    if (!s.includes('.') && s.length >= 2) {
+      add(parseFloat(`${s[0]}.${s.slice(1)}`), e + 1);
+      if (s.length >= 3) add(parseFloat(`${s.slice(0, 2)}.${s.slice(2)}`), e + 1);
+      if (s.length === 3 && s[1] === '8') add(parseFloat(`${s[0]}.${s[2]}`), e + 2);
+    }
+  }
+  return [...out].map(([value, edits]) => ({ value, edits }));
 }
 
 /** Portion size from a header like "w porcji (30 g)" or "per portion 30 g". */
@@ -94,64 +139,135 @@ const hasPer100 = (text: string) => /100\s*(g|ml)/.test(text);
 /** Whether two amounts agree within a share of the second. */
 const near = (a: number, b: number, share: number) => b > 0 && Math.abs(a - b) <= share * b;
 
+/** The energy in kcal from the energy row (and the line after it when the row was split). */
+function energyFrom(lines: string[], i: number): number | undefined {
+  const nums = [...numbersIn(lines[i]), ...(i + 1 < lines.length && !lineKey(lines[i + 1]) ? numbersIn(lines[i + 1]) : [])];
+  const kj = nums.find((n) => n.unit === 'kj');
+  // The kcal of the 100 g column is its kJ divided by 4.184. Taking the number that fits survives OCR dropping a
+  // "kcal" and offering the portion column's instead.
+  const fromKj = kj && nums.find((n) => n !== kj && n.unit !== 'kj' && near(n.value, kj.value / 4.184, 0.04));
+  const kcal = nums.find((n) => n.unit === 'kcal');
+  if (fromKj) return fromKj.value;
+  if (kj) return Math.round(kj.value / 4.184);
+  return kcal?.value;
+}
+
 export function readLabel(ocrText: string): LabelReading {
-  const lines = plain(ocrText)
+  const all = plain(ocrText);
+  const lines = all
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);
-  const values: Partial<Nutrients> = {};
-  /** The portion column of each row, used to catch a lost decimal comma in the 100 g column. */
-  const portionColumn: Partial<Nutrients> = {};
 
-  for (let i = 0; i < lines.length; i++) {
-    const key = lineKey(lines[i]);
-    if (!key || values[key] !== undefined) continue;
+  let kcal: number | undefined;
+  const energyAt = lines.findIndex((l) => lineKey(l) === 'energy');
+  if (energyAt >= 0) kcal = energyFrom(lines, energyAt);
 
-    if (key === 'kcal') {
-      // Energy may continue on the next line ("1550 kJ" / "370 kcal").
-      const nums = [...numbersIn(lines[i]), ...(i + 1 < lines.length && !lineKey(lines[i + 1]) ? numbersIn(lines[i + 1]) : [])];
-      const kj = nums.find((n) => n.unit === 'kj');
-      // The kcal of the 100 g column is the kJ of that column divided by 4.184. Reading the number that fits that,
-      // rather than the first one marked "kcal", survives OCR dropping a "kcal" and handing over the portion's.
-      const fromKj = kj && nums.find((n) => n !== kj && n.unit !== 'kj' && near(n.value, kj.value / 4.184, 0.04));
-      const kcal = nums.find((n) => n.unit === 'kcal');
-      if (fromKj) values.kcal = fromKj.value;
-      else if (kj) values.kcal = Math.round(kj.value / 4.184);
-      else if (kcal) values.kcal = kcal.value;
-      continue;
-    }
-
-    // The first amount in the row is the per-100 g column. Milligrams (sodium tables) are converted.
-    const nums = numbersIn(lines[i]).filter((n) => n.unit !== 'kcal' && n.unit !== 'kj');
-    const first = nums[0];
-    if (!first) continue;
-    values[key] = first.unit === 'mg' ? first.value / 1000 : first.value;
-    if (nums[1]) portionColumn[key] = nums[1].unit === 'mg' ? nums[1].value / 1000 : nums[1].value;
+  // The table: lines after the energy row that carry a number, up to the net weight or the end. Ingredient
+  // lines (with percentages) are not part of it.
+  const table: { key: Row | null; first: Token; second?: Token }[] = [];
+  for (let i = energyAt >= 0 ? energyAt + 1 : 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/masa netto|net weight|netto|przechowywac|najlepiej spozyc/.test(line) && table.length > 0) break;
+    const key = lineKey(line);
+    if (key === 'energy' || /%/.test(line)) continue;
+    const nums = numbersIn(line).filter((n) => n.unit !== 'kcal' && n.unit !== 'kj');
+    if (nums.length === 0) continue;
+    table.push({ key, first: nums[0], second: nums[1] });
   }
 
-  // A stray "kcal" figure elsewhere (energy row the OCR split oddly).
+  // Rows without a readable name take the places left for them between named rows, in the fixed order. Fibre is
+  // optional, so when there is one place too many it is the one left empty.
+  const named: (Row | null)[] = table.map((r) => r.key as Row | null);
+  for (let i = 0; i < table.length; i++) {
+    if (named[i]) continue;
+    let j = i;
+    while (j < table.length && !named[j]) j++;
+    const before = i > 0 ? ORDER.indexOf(named[i - 1] as Row) : -1;
+    const after = j < table.length ? ORDER.indexOf(named[j] as Row) : ORDER.length;
+    let places = ORDER.slice(before + 1, after);
+    const unnamed = j - i;
+    if (places.length > unnamed && places.includes('fiber')) places = places.filter((p) => p !== 'fiber');
+    if (places.length === unnamed) for (let k = 0; k < unnamed; k++) named[i + k] = places[k];
+    i = j;
+  }
+
+  const rows = new Map<Row, { first: Token; second?: Token }>();
+  table.forEach((r, i) => {
+    const key = named[i] as Row | null;
+    if (key && !rows.has(key)) rows.set(key, r);
+  });
+
+  const values: Partial<Nutrients> = {};
+  const plainValue = (t: Token) => (t.unit === 'mg' ? t.value / 1000 : t.value);
+
+  // Fat, carbohydrates and protein, chosen together to fit the energy when it is known.
+  const macros = (['fat', 'carbs', 'protein'] as const).filter((k) => rows.has(k));
+  const fiberRow = rows.get('fiber');
+  const fiber = fiberRow ? plainValue(fiberRow.first) : 0;
+  if (kcal && macros.length === 3) {
+    const options = macros.map((k) => readings(rows.get(k)!.first).filter((r) => r.value <= 100));
+    let best: { pick: number[]; cost: number } | null = null;
+    for (const f of options[0])
+      for (const c of options[1])
+        for (const p of options[2]) {
+          if (f.value + c.value + p.value > 100) continue;
+          const energy = p.value * 4 + (c.value - fiber) * 4 + fiber * 2 + f.value * 9;
+          const miss = Math.abs(energy - kcal) / kcal;
+          const cost = miss * 100 + (f.edits + c.edits + p.edits) * 0.5;
+          if (!best || cost < best.cost) best = { pick: [f.value, c.value, p.value], cost };
+        }
+    // Only trusted when it fits the energy closely; otherwise the plain readings stand, flagged on the check screen.
+    if (best && best.cost <= 12) macros.forEach((k, n) => (values[k] = best!.pick[n]));
+  }
+  // Without the energy to check against: the reading that needed the fewest repairs.
+  for (const k of macros) {
+    if (values[k] !== undefined) continue;
+    const row = rows.get(k)!;
+    values[k] = row.first.unit === 'mg' ? row.first.value / 1000 : [...readings(row.first)].sort((a, b) => a.edits - b.edits)[0].value;
+  }
+
+  // Sugars within carbohydrates, saturates within fat, salt and fibre plausible: the least repaired reading that fits.
+  const within = (k: Row, limit: number) => {
+    const row = rows.get(k);
+    if (!row) return undefined;
+    if (row.first.unit === 'mg') return row.first.value / 1000;
+    const fits = readings(row.first, k !== 'salt')
+      .filter((r) => r.value <= limit)
+      .sort((a, b) => a.edits - b.edits);
+    return fits[0]?.value ?? row.first.value;
+  };
+  const sugar = within('sugar', values.carbs ?? 100);
+  if (sugar !== undefined) values.sugar = sugar;
+  const fib = within('fiber', 50);
+  if (fib !== undefined) values.fiber = fib;
+  const salt = within('salt', 20);
+  if (salt !== undefined) values.salt = salt;
+  if (kcal !== undefined) values.kcal = kcal;
+
+  // A stray "kcal" figure elsewhere, when no energy row was recognised.
   if (values.kcal === undefined) {
-    const m = /(\d+(?:[.,]\d+)?)\s*kcal/.exec(plain(ocrText));
+    const m = /(\d+(?:[.,]\d+)?)\s*kcal/.exec(all);
     if (m) values.kcal = parseFloat(m[1].replace(',', '.'));
   }
 
-  const all = plain(ocrText);
   const portion = portionSize(all);
 
-  // With both columns, the portion one is a check: a 100 g value ten or a hundred times what the portion implies
-  // most likely lost its decimal comma ("1,1 g" read as "11g").
+  // With both columns, the portion one is a further check: a 100 g value ten or a hundred times what the portion
+  // implies most likely lost its decimal comma.
   if (portion && hasPer100(all)) {
-    for (const k of Object.keys(portionColumn) as Key[]) {
+    for (const [k, row] of rows) {
+      if (k === 'saturates' || !row.second || row.second.value <= 0) continue;
       const a = values[k];
-      const b = portionColumn[k];
-      if (a === undefined || b === undefined || b <= 0) continue;
-      const expected = (b * 100) / portion;
+      if (a === undefined) continue;
+      const expected = (plainValue(row.second) * 100) / portion;
       if (near(a, expected, 0.3)) continue;
       const fixed = [a / 10, a / 100].find((c) => near(c, expected, 0.15));
       if (fixed !== undefined) values[k] = Math.round(fixed * 1000) / 1000;
     }
   }
 
+  // Only a portion column: scale everything to 100 g.
   if (portion && !hasPer100(all)) {
     const f = 100 / portion;
     for (const k of Object.keys(values) as Key[]) values[k] = Math.round(values[k]! * f * 10) / 10;

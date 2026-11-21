@@ -13,8 +13,15 @@ export interface OcrProgress {
   share?: number;
 }
 
-/** Longest side the photo is reduced to: enough for table text, small enough to read in a few seconds. */
-const MAX_SIDE = 2000;
+/**
+ * Longest side the photo is brought to. Tesseract reads best when lines of text are about 30 px high; a
+ * nutrition table photographed with its package is small in the frame, so phone photos are reduced only this
+ * far and smaller ones (screenshots, shared images) are enlarged to it. Tested on a real label: 2× enlargement
+ * turned "1,5g" from "159" into "1,5g".
+ */
+const TARGET_SIDE = 2600;
+/** Never enlarge more than this: past it the letters only get blurrier. */
+const MAX_ENLARGE = 2.5;
 
 /**
  * The photo made easier to read: scaled, grey, and with its levels stretched so faint print on a coloured
@@ -22,11 +29,12 @@ const MAX_SIDE = 2000;
  */
 export async function preparePhoto(file: Blob): Promise<HTMLCanvasElement> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(MAX_ENLARGE, TARGET_SIDE / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
 

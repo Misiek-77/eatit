@@ -181,3 +181,110 @@
   font-size: 13px;
   white-space: pre-wrap;
 }
+
+.meal-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.meal-actions .btn {
+  margin-top: 6px;
+}
+
+.training-day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  font-size: 14px;
+}
+
+.training-day .icon {
+  flex: none;
+}
+
+.water {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.water > .icon {
+  flex: none;
+  color: var(--water);
+}
+
+.water-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.water-main p {
+  margin-bottom: 6px;
+}
+
+.water-fill {
+  background: var(--water);
+}
+
+:root {
+  --water: #3f8fd8;
+}
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-nav h2 {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+  font-size: 17px;
+}
+
+.week-chart text {
+  font-size: 11px;
+  fill: var(--muted);
+}
+
+.weight-form {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.weight-form .field {
+  flex: 1;
+}
+
+.verdict {
+  margin-top: 12px;
+}
+
+.dish-row {
+  display: grid;
+  grid-template-columns: 1fr 88px auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.dish-row .item-sub {
+  display: block;
+}
+
+.add-actions + .add-actions {
+  margin-top: 8px;
+}
+
+.add-actions > :not(.btn) {
+  grid-column: 1 / -1;
+}
+
+.water-main .bar-track {
+  display: block;
+}

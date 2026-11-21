@@ -8,6 +8,7 @@ import { UpdateBanner } from './shared/UpdateBanner';
 /** The standalone app's tabs. A merged app would show a single "Dieta" tab instead. */
 const TABS: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: '/dieta', label: 'Dziennik', icon: 'today', end: true },
+  { to: '/dieta/postepy', label: 'Postępy', icon: 'progress' },
   { to: '/dieta/produkty', label: 'Produkty', icon: 'products' },
   { to: '/dieta/ustawienia', label: 'Cele', icon: 'settings' },
 ];

@@ -38,3 +38,15 @@ Aplikacja jest zbudowana tak, żeby dało się ją później wcielić do aplikac
 - **Style:** `src/styles/tokens.css` i `app.css` są takie same jak w Treningu; dziennik ma tylko
   własny `nutrition.css`.
 - **`NutritionProvider`** owija aplikację obok `StoreProvider` Treningu; nie dzielą stanu.
+
+### Wspólne dane już teraz
+
+Obie aplikacje są na tym samym adresie (misiek-77.github.io), więc każda może **czytać** bazę drugiej
+(`src/shared/otherApp.ts`, w Treningu `src/data/otherApp.ts`). Nigdy jej nie tworzy ani nie zmienia.
+
+- Jadłospis bierze z Treningu dni z treningiem (dodatek kcal w Celach) i wagę z pomiarów ciała.
+- Trening pokazuje na wykresie wagi także wagę wpisaną w Jadłospisie.
+- „Eksportuj obie aplikacje” zapisuje jeden plik `{ app: "komplet", trening, jadlospis }`. Każda aplikacja
+  przywraca z niego swoją część.
+
+Po połączeniu w jedną aplikację te odczyty zastępuje bezpośredni dostęp do obu baz.

@@ -84,20 +84,26 @@ export function AddScreen() {
           Nowy produkt
         </button>
       </div>
-      <LabelPhoto
-        label="Zdjęcie etykiety"
-        className="btn btn-block"
-        onRead={(reading, text) => {
-          const { found, missing } = foundList(reading);
-          toForm({
-            label: reading.values,
-            ocrText: text,
-            notice: found
-              ? `Odczytano z etykiety: ${found}${reading.portionGrams ? ` (przeliczone z porcji ${reading.portionGrams} g na 100 g)` : ''}.${missing ? ` Nie znaleziono: ${missing} — wpisz ręcznie.` : ''} Sprawdź wszystko z etykietą i wpisz nazwę.`
-              : 'Nie udało się znaleźć wartości na zdjęciu. Spróbuj zdjęcia samej tabeli z bliska albo wpisz wartości ręcznie.',
-          });
-        }}
-      />
+      <div className="add-actions">
+        <LabelPhoto
+          label="Zdjęcie etykiety"
+          className="btn"
+          onRead={(reading, text) => {
+            const { found, missing } = foundList(reading);
+            toForm({
+              label: reading.values,
+              ocrText: text,
+              notice: found
+                ? `Odczytano z etykiety: ${found}${reading.portionGrams ? ` (przeliczone z porcji ${reading.portionGrams} g na 100 g)` : ''}.${missing ? ` Nie znaleziono: ${missing} — wpisz ręcznie.` : ''} Sprawdź wszystko z etykietą i wpisz nazwę.`
+                : 'Nie udało się znaleźć wartości na zdjęciu. Spróbuj zdjęcia samej tabeli z bliska albo wpisz wartości ręcznie.',
+            });
+          }}
+        />
+        <button type="button" className="btn" onClick={() => navigate('/dieta/danie/nowe', { state: { meal, date } })}>
+          <Icon name="dish" />
+          Nowe danie
+        </button>
+      </div>
       {looking && (
         <p className="note" role="status" style={{ marginTop: 12 }}>
           Szukam produktu {looking} w bazie…

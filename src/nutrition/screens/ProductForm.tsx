@@ -45,6 +45,8 @@ export function ProductForm() {
   const state = (useLocation().state ?? {}) as ProductDraftState;
   const existing = store.products.find((p) => p.id === id);
   if (id !== 'nowy' && !existing) return <Navigate to="/dieta/produkty" replace />;
+  // A dish has its own form, worked out from its ingredients.
+  if (existing?.ingredients) return <Navigate to={`/dieta/danie/${existing.id}`} replace state={state} />;
   return <Form key={id} existing={existing} state={state} />;
 }
 

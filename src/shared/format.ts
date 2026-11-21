@@ -23,3 +23,15 @@ export function plural(n: number, one: string, few: string, many: string): strin
 export function searchKey(text: string): string {
   return text.toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
+
+const shortDay = new Intl.DateTimeFormat('pl-PL', { weekday: 'short', day: 'numeric', month: 'short' });
+const dayMonth = new Intl.DateTimeFormat('pl-PL', { day: 'numeric', month: 'short' });
+/** "pt., 20 lis" from a day key. */
+export const formatShortDay = (key: string) => shortDay.format(dateAt(key));
+/** "20 lis" from a day key. */
+export const formatDayMonth = (key: string) => dayMonth.format(dateAt(key));
+/** Noon of a day key, so formatting never slips to a neighbouring day. */
+function dateAt(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d, 12);
+}

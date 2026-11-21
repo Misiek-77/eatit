@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { DiaryEntry, NutritionData, NutritionSettings, Product } from '../domain/types';
+import type { DiaryEntry, NutritionData, NutritionSettings, Product, WaterDay, WeightEntry } from '../domain/types';
 
 // The context lives apart from its provider, so hot reload while developing never leaves screens holding an old one.
 
@@ -11,7 +11,11 @@ export interface NutritionStore extends NutritionData {
   removeProduct(id: string): void;
   saveEntry(entry: DiaryEntry): void;
   removeEntry(id: string): void;
+  saveEntries(entries: DiaryEntry[]): void;
   saveSettings(settings: NutritionSettings): void;
+  saveWeight(weight: WeightEntry): void;
+  removeWeight(id: string): void;
+  setWater(day: WaterDay): void;
   replaceAll(data: NutritionData): Promise<void>;
 }
 

@@ -6,9 +6,12 @@ import { Header } from '../../shared/Header';
 import { Icon } from '../../shared/Icon';
 import { Sheet } from '../../shared/Sheet';
 import { useToday } from '../../shared/useToday';
-import { dayTotals, entryNutrients } from '../domain/nutrients';
-import { MEALS, type DiaryEntry } from '../domain/types';
+import { newId } from '../../shared/id';
+import { copyEntries, pastMeals } from '../domain/diary';
+import { dayTotals, entryNutrients, goalsForDay } from '../domain/nutrients';
+import { MEALS, type DiaryEntry, type Meal } from '../domain/types';
 import { useNutrition } from '../state/nutritionContext';
+import { useTrainingLink } from '../state/training';
 import { AmountForm, KcalRing, MacroBars, MEAL_LABEL } from './parts';
 
 /** The diary of one day: energy and macros against the goals, and what was eaten at each meal. */
@@ -18,8 +21,16 @@ export function TodayScreen() {
   const [params, setParams] = useSearchParams();
   const date = params.get('dzien') ?? today;
   const [editing, setEditing] = useState<DiaryEntry | null>(null);
+  const [copyTo, setCopyTo] = useState<Meal | null>(null);
   const totals = dayTotals(store.entries, date);
-  const { goals } = store.settings;
+  const { workoutDays } = useTrainingLink();
+  const bonus = store.settings.trainingBonusKcal;
+  const trainingDay = workoutDays.has(date);
+  const goals = goalsForDay(store.settings.goals, bonus, trainingDay);
+  const water = store.water.find((w) => w.date === date)?.ml ?? 0;
+  const waterGoal = store.settings.waterGoalMl;
+  const past = copyTo ? pastMeals(store.entries, date, copyTo) : [];
+  const dayName = (key: string) => (key === shiftDay(today, -1) ? 'Wczoraj' : capitalize(formatLongDay(dateOfKey(key))));
   const go = (key: string) => setParams(key === today ? {} : { dzien: key }, { replace: true });
 
   return (
@@ -42,6 +53,12 @@ export function TodayScreen() {
         </button>
       </div>
 
+      {trainingDay && (
+        <p className="training-day" role="note">
+          <Icon name="bolt" />
+          {bonus > 0 ? `Dzień treningowy: cel wyższy o ${formatWhole(bonus)} kcal (z węglowodanów).` : 'Dzień treningowy. Dodatek kalorii ustawisz w Celach.'}
+        </p>
+      )}
       <section className="section day-summary">
         <KcalRing eaten={totals.day.kcal} goal={goals.kcal} />
         <div className="day-summary-side">
@@ -50,6 +67,25 @@ export function TodayScreen() {
           </p>
           <MacroBars totals={totals.day} goals={goals} />
         </div>
+      </section>
+
+      <section className="section water" aria-label="Woda">
+        <Icon name="water" />
+        <div className="water-main">
+          <p>
+            <strong>{formatWhole(water)}</strong> <span className="muted">/ {formatWhole(waterGoal)} ml wody</span>
+          </p>
+          <span className="bar-track" aria-hidden="true">
+            <span className="bar-fill water-fill" style={{ width: `${Math.min(100, (water / Math.max(1, waterGoal)) * 100)}%` }} />
+          </span>
+        </div>
+        <button type="button" className="icon-btn" aria-label="Odejmij szklankę wody (250 ml)" disabled={water <= 0} onClick={() => store.setWater({ date, ml: Math.max(0, water - 250) })}>
+          <Icon name="minus" />
+        </button>
+        <button type="button" className="btn btn-small" aria-label="Dodaj szklankę wody (250 ml)" onClick={() => store.setWater({ date, ml: water + 250 })}>
+          <Icon name="plus" />
+          250 ml
+        </button>
       </section>
 
       {MEALS.map((meal) => {
@@ -80,14 +116,48 @@ export function TodayScreen() {
                 })}
               </ul>
             )}
-            <Link className="btn btn-small btn-quiet add-food" to={`/dieta/dodaj?posilek=${meal}&dzien=${date}`}>
-              <Icon name="plus" />
-              Dodaj
-            </Link>
+            <div className="meal-actions">
+              <Link className="btn btn-small btn-quiet add-food" to={`/dieta/dodaj?posilek=${meal}&dzien=${date}`}>
+                <Icon name="plus" />
+                Dodaj
+              </Link>
+              <button type="button" className="btn btn-small btn-quiet" onClick={() => setCopyTo(meal)}>
+                <Icon name="copy" />
+                Kopiuj
+              </button>
+            </div>
           </section>
         );
       })}
 
+      <Sheet open={copyTo !== null} onClose={() => setCopyTo(null)} title={copyTo ? `Kopiuj do: ${MEAL_LABEL[copyTo].toLowerCase()}` : ''}>
+        {past.length === 0 ? (
+          <p className="empty">W ostatnich dwóch tygodniach nie ma posiłków do skopiowania.</p>
+        ) : (
+          <ul className="list">
+            {past.map((p) => (
+              <li key={`${p.date}-${p.meal}`}>
+                <button
+                  type="button"
+                  className="item"
+                  onClick={() => {
+                    if (copyTo) store.saveEntries(copyEntries(p.entries, date, copyTo, new Date().toISOString(), newId));
+                    setCopyTo(null);
+                  }}
+                >
+                  <span className="item-main">
+                    <span className="item-title">
+                      {dayName(p.date)} · {MEAL_LABEL[p.meal]}
+                    </span>
+                    <span className="item-sub">{p.entries.map((e) => e.name).join(', ')}</span>
+                  </span>
+                  <span className="item-end">{formatWhole(p.totals.kcal)} kcal</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Sheet>
       <Sheet open={editing !== null} onClose={() => setEditing(null)} title={editing?.name ?? ''}>
         {editing && (
           <AmountForm

@@ -24,8 +24,20 @@ export function ProductsScreen() {
       </Header>
       <h1 className="title">Moje produkty</h1>
       <p className="subtitle">
-        {products.length === 0 ? 'Zeskanowane i dodane produkty pojawią się tutaj.' : plural(products.length, 'produkt', 'produkty', 'produktów')}
+        {products.length === 0
+          ? 'Zeskanowane i dodane produkty pojawią się tutaj. Z produktów złożysz też własne dania.'
+          : plural(products.length, 'pozycja', 'pozycje', 'pozycji')}
       </p>
+      <div className="add-actions">
+        <Link className="btn" to="/dieta/produkt/nowy">
+          <Icon name="plus" />
+          Nowy produkt
+        </Link>
+        <Link className="btn" to="/dieta/danie/nowe">
+          <Icon name="dish" />
+          Nowe danie
+        </Link>
+      </div>
       <section className="section">
         <input className="input" type="search" placeholder="Szukaj" aria-label="Szukaj produktu" value={query} onChange={(e) => setQuery(e.target.value)} />
         <ul className="list">
@@ -36,6 +48,7 @@ export function ProductsScreen() {
                   <span className="item-title">
                     {p.favorite && <span aria-label="Ulubiony">★ </span>}
                     {p.name}
+                    {p.ingredients && <span className="muted"> · danie</span>}
                     {p.brand && <span className="muted"> · {p.brand}</span>}
                   </span>
                   <span className="item-sub">{nutrientLine(p.per100)} na 100 g</span>

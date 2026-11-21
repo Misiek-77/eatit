@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { NutritionRepository } from '../data/repository';
-import type { DiaryEntry, NutritionData, NutritionSettings, Product } from '../domain/types';
+import type { DiaryEntry, NutritionData, NutritionSettings, Product, WaterDay, WeightEntry } from '../domain/types';
 import { NutritionContext, type NutritionStore } from './nutritionContext';
 
 const upsert = <T extends { id: string }>(list: T[], item: T) =>
@@ -45,6 +45,18 @@ export function NutritionProvider({ repository, children }: { repository: Nutrit
       removeProduct: (id: string) => commit((d) => ({ ...d, products: d.products.filter((p) => p.id !== id) }), () => repository.deleteProduct(id)),
       saveEntry: (e: DiaryEntry) => commit((d) => ({ ...d, entries: upsert(d.entries, e) }), () => repository.putEntry(e)),
       removeEntry: (id: string) => commit((d) => ({ ...d, entries: d.entries.filter((e) => e.id !== id) }), () => repository.deleteEntry(id)),
+      saveEntries: (list: DiaryEntry[]) =>
+        commit(
+          (d) => ({ ...d, entries: list.reduce(upsert, d.entries) }),
+          () => Promise.all(list.map((e) => repository.putEntry(e))).then(() => undefined),
+        ),
+      saveWeight: (w: WeightEntry) => commit((d) => ({ ...d, weights: upsert(d.weights, w) }), () => repository.putWeight(w)),
+      removeWeight: (id: string) => commit((d) => ({ ...d, weights: d.weights.filter((w) => w.id !== id) }), () => repository.deleteWeight(id)),
+      setWater: (day: WaterDay) =>
+        commit(
+          (d) => ({ ...d, water: [...d.water.filter((w) => w.date !== day.date), ...(day.ml > 0 ? [day] : [])] }),
+          () => repository.putWater(day),
+        ),
       saveSettings: (s: NutritionSettings) => commit((d) => ({ ...d, settings: s }), () => repository.putSettings(s)),
       replaceAll: async (data: NutritionData) => {
         await repository.replaceAll(data);

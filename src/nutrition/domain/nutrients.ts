@@ -61,3 +61,9 @@ export function goalsFromWeight(weightKg: number, kcal: number, proteinPerKg = 2
   const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
   return { kcal: Math.round(kcal), protein, fat, carbs };
 }
+
+/** The day's goals with the training-day extra: energy goes up, the added part as carbohydrates. */
+export function goalsForDay(goals: Goals, bonusKcal: number, trainingDay: boolean): Goals {
+  if (!trainingDay || bonusKcal <= 0) return goals;
+  return { ...goals, kcal: goals.kcal + bonusKcal, carbs: goals.carbs + Math.round(bonusKcal / 4) };
+}

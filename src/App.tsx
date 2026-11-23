@@ -27,6 +27,12 @@ export function App() {
           </div>
         )}
         <UpdateBanner />
+        <div className="banner" role="note">
+          <span style={{ flex: 1 }}>
+            Jadłospis jest teraz częścią aplikacji <a href="https://misiek-77.github.io/Heavy-Weight/#/dieta">Trening</a> (zakładka Dieta). Przenieś dane: tu
+            Cele → Eksportuj, a w Treningu Dieta → Cele → Importuj.
+          </span>
+        </div>
         <Suspense fallback={<main className="screen" aria-busy="true" />}>
           <Routes>
             <Route path="/" element={<Navigate to="/dieta" replace />} />
